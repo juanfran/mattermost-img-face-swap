@@ -1,5 +1,3 @@
-// go run face-swap.go /usr/share/opencv4/haarcascades/haarcascade_frontalface_alt.xml
-
 package main
 
 import "C"
@@ -14,7 +12,7 @@ import (
 	"gocv.io/x/gocv"
 )
 
-func main() {
+func faceswap() {
 	meme := "meme2.jpg"
 	bigImage := gocv.IMRead(meme, gocv.IMReadColor)
 
