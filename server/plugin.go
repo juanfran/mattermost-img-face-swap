@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/gorilla/mux"
 	"github.com/mattermost/mattermost-server/model"
 	"github.com/mattermost/mattermost-server/plugin"
 )
@@ -20,6 +21,8 @@ type Plugin struct {
 	// configuration is the active plugin configuration. Consult getConfiguration and
 	// setConfiguration for usage.
 	configuration *configuration
+
+	router *mux.Router
 }
 
 // ServeHTTP demonstrates a plugin that handles HTTP requests by greeting the world.
@@ -27,8 +30,17 @@ func (p *Plugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Req
 	fmt.Fprint(w, "Hello, world!")
 }
 
+// serve Img
+func serveImg(w http.ResponseWriter, r *http.Request) {
+	http.NotFound(w, r)
+	return
+}
+
 // OnActivate activate plugin
 func (p *Plugin) OnActivate() error {
+	p.router = mux.NewRouter()
+	p.router.HandleFunc("/img/{name}.jpg", serveImg).Methods("GET")
+
 	return p.API.RegisterCommand(&model.Command{
 		Trigger:          "faceswap",
 		AutoComplete:     true,
@@ -39,7 +51,7 @@ func (p *Plugin) OnActivate() error {
 // ExecuteCommand face-swap command
 func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	input := strings.TrimSpace(strings.TrimPrefix(args.Command, "/faceswap"))
-	fmt.Printf("Input %v\n", input)
+	fmt.Printf("Input2: %v\n", input)
 
 	names := []string{"person1", "person2"}
 
@@ -52,7 +64,7 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*mo
 
 	return &model.CommandResponse{
 		ResponseType: model.COMMAND_RESPONSE_TYPE_IN_CHANNEL,
-		Text:         "Input " + input,
+		Text:         "![Face swap](/plugins/face-swap/img/test.jpg)",
 	}, nil
 }
 

@@ -18,19 +18,19 @@ func loadImage(filePath string) image.Image {
 	return img
 }
 
-type face struct {
+type faceType struct {
 	image image.Image
 	name  string
 }
 
-var images = []face{}
+var images = []faceType{}
 
 func isImage(file string) bool {
 	ext := strings.ToLower(filepath.Ext(file))
 	return ext == ".jpg" || ext == ".jpeg" || ext == ".png"
 }
 
-func init() {
+func getImg() {
 	files, err := ioutil.ReadDir("./faces")
 	if err != nil {
 		log.Fatal(err)
@@ -47,7 +47,7 @@ func init() {
 		faceName := strings.TrimSuffix(fileName, filepath.Ext(fileName))
 		image := loadImage(filepath.Join("faces", fileName))
 
-		face := face{
+		face := faceType{
 			name:  faceName,
 			image: image,
 		}
