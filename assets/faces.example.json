@@ -5,16 +5,13 @@
             "images": [
                 {
                     "path": "faces/face1.png",
-                    "width": 0.8,
-                    "height": 0.8,
-                    "paddingLeft": 0,
-                    "paddingTop": 0
+                    "width": 80,
+                    "paddingLeft": 30
                 }
             ]
         }
     ],
-    "width": 0.8,
-    "height": 0.8,
+    "width": 80,
     "paddingLeft": 0,
     "paddingTop": 0
 }
