@@ -6,31 +6,33 @@ import (
 	"image"
 	"image/color"
 	"log"
-	"os"
 
 	"github.com/disintegration/imaging"
 	"gocv.io/x/gocv"
 )
 
-func faceswap() {
-	meme := "meme2.jpg"
-	bigImage := gocv.IMRead(meme, gocv.IMReadColor)
+func faceswap(memePath string, face faceType) {
+	bigImage := gocv.IMRead(memePath, gocv.IMReadColor)
 
-	image1, err := imaging.Open(meme)
+	image1, err := imaging.Open(memePath)
 	if err != nil {
 		log.Fatalf("failed to open image: %v", err)
 	}
 
-	image2, err := imaging.Open("face.png")
+	image2, err := imaging.Open(face.image)
 	if err != nil {
 		log.Fatalf("failed to open image: %v", err)
 	}
+
+	fmt.Println(memePath)
+	fmt.Println(face.image)
 
 	// load classifier to recognize faces
 	classifier := gocv.NewCascadeClassifier()
 	defer classifier.Close()
 
-	xmlFile := os.Args[1]
+	// xmlFile := os.Args[1]
+	xmlFile := "/usr/share/opencv4/haarcascades/haarcascade_frontalface_alt.xml"
 	if !classifier.Load(xmlFile) {
 		fmt.Printf("Error reading cascade file: %v\n", xmlFile)
 		return
@@ -58,6 +60,8 @@ func faceswap() {
 		dst = imaging.Paste(dst, image1, image.Pt(0, 0))
 		dst = imaging.Overlay(dst, resizedImage, image.Pt(r.Min.X, r.Min.Y-r.Min.Y*80/100), 1)
 
+		// return dst
+		// image.NRGBA
 		err = imaging.Save(dst, "result.jpg")
 		if err != nil {
 			log.Fatalf("failed to save image: %v", err)

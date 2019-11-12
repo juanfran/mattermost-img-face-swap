@@ -21,7 +21,7 @@ func loadImage(filePath string) image.Image {
 }
 
 type faceType struct {
-	image       image.Image
+	image       string
 	name        string
 	width       float32
 	height      float32
@@ -85,7 +85,7 @@ func loadImages(bundlePath string) {
 		fmt.Println("name: " + data.Name)
 
 		for _, image := range data.Images {
-			imageFile := loadImage(filepath.Join(bundlePath, "assets", image.Path))
+			imageFile := filepath.Join(bundlePath, "assets", image.Path)
 			width := image.Width
 			height := image.Height
 			paddingLeft := image.PaddingLeft
@@ -118,6 +118,8 @@ func loadImages(bundlePath string) {
 	}
 
 	fmt.Println(images)
+	test := filepath.Join(bundlePath, "assets", "meme3.jpg")
+	faceswap(test, images[0])
 }
 
 // Faces get faces
