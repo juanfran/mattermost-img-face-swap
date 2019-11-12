@@ -21,18 +21,12 @@ func loadImage(filePath string) image.Image {
 }
 
 type faceType struct {
-	images      []image.Image
+	image       image.Image
 	name        string
-	width       string
-	height      string
-	paddingLeft string
-	paddintTop  string
-}
-
-type Bird struct {
-	Species     string `json:"species"`
-	Description string `json:"description"`
-	Width       int    `json:"width, omitempty"`
+	width       float32
+	height      float32
+	paddingLeft float32
+	paddingTop  float32
 }
 
 // FaceSwapConfig json file config
@@ -60,13 +54,10 @@ func isImage(file string) bool {
 	return ext == ".jpg" || ext == ".jpeg" || ext == ".png"
 }
 
-func loadImgConfigFile(filePath string) {
-	// var faceSwapConfig map[string]interface{}
+func loadImgConfigFile(filePath string) FaceSwapConfig {
 	var faceSwapConfig FaceSwapConfig
 
 	jsonFile, err := os.Open(filePath)
-
-	fmt.Println(filePath)
 
 	if err != nil {
 		panic(err)
@@ -82,26 +73,56 @@ func loadImgConfigFile(filePath string) {
 	}
 
 	defer jsonFile.Close()
+
+	return faceSwapConfig
 }
 
 func loadImages(bundlePath string) {
-	dir := filepath.Join(bundlePath, "assets", "faces")
-	files, err := ioutil.ReadDir(dir)
+	filePath := filepath.Join(bundlePath, "assets", "faces.json")
+	var faceSwapConfig = loadImgConfigFile(filePath)
 
-	if err != nil {
-		panic(err)
-	}
+	for _, data := range faceSwapConfig.Faces {
+		fmt.Println("name: " + data.Name)
 
-	for _, file := range files {
-		fileName := file.Name()
+		for _, image := range data.Images {
+			imageFile := loadImage(filepath.Join(bundlePath, "assets", image.Path))
+			width := image.Width
+			height := image.Height
+			paddingLeft := image.PaddingLeft
+			paddingTop := image.PaddingTop
 
-		ext := filepath.Ext(fileName)
-		if ext != ".json" {
-			continue
+			if width == 0 {
+				width = faceSwapConfig.Width
+			}
+			if height == 0 {
+				height = faceSwapConfig.Height
+			}
+			if paddingLeft == 0 {
+				paddingLeft = faceSwapConfig.PaddingLeft
+			}
+			if paddingTop == 0 {
+				paddingTop = faceSwapConfig.PaddingTop
+			}
+
+			newFace := faceType{
+				image:       imageFile,
+				name:        data.Name,
+				width:       width,
+				height:      height,
+				paddingLeft: paddingLeft,
+				paddingTop:  paddingTop,
+			}
+
+			images = append(images, newFace)
 		}
-
-		loadImgConfigFile(filepath.Join(dir, file.Name()))
 	}
+
+	fmt.Println(images)
+}
+
+// Faces get faces
+func Faces() []faceType {
+	return images
 }
 
 func main() {
