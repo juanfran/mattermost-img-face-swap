@@ -23,10 +23,9 @@ func loadImage(filePath string) image.Image {
 type faceType struct {
 	image       string
 	name        string
-	width       float32
-	height      float32
-	paddingLeft float32
-	paddingTop  float32
+	width       int
+	paddingLeft int
+	paddingTop  int
 }
 
 // FaceSwapConfig json file config
@@ -34,17 +33,15 @@ type FaceSwapConfig struct {
 	Faces []struct {
 		Name   string `json:"name"`
 		Images []struct {
-			Path        string  `json:"path"`
-			Width       float32 `json:"width,omitempty"`
-			Height      float32 `json:"height,omitempty"`
-			PaddingLeft float32 `json:"paddingLeft,omitempty"`
-			PaddingTop  float32 `json:"paddingTop,omitempty"`
+			Path        string `json:"path"`
+			Width       int    `json:"width,omitempty"`
+			PaddingLeft int    `json:"paddingLeft,omitempty"`
+			PaddingTop  int    `json:"paddingTop,omitempty"`
 		} `json:"images"`
 	} `json:"faces"`
-	Width       float32 `json:"width"`
-	Height      float32 `json:"height"`
-	PaddingLeft float32 `json:"paddingLeft"`
-	PaddingTop  float32 `json:"paddingTop"`
+	Width       int `json:"width"`
+	PaddingLeft int `json:"paddingLeft"`
+	PaddingTop  int `json:"paddingTop"`
 }
 
 var images = []faceType{}
@@ -87,15 +84,11 @@ func loadImages(bundlePath string) {
 		for _, image := range data.Images {
 			imageFile := filepath.Join(bundlePath, "assets", image.Path)
 			width := image.Width
-			height := image.Height
 			paddingLeft := image.PaddingLeft
 			paddingTop := image.PaddingTop
 
 			if width == 0 {
 				width = faceSwapConfig.Width
-			}
-			if height == 0 {
-				height = faceSwapConfig.Height
 			}
 			if paddingLeft == 0 {
 				paddingLeft = faceSwapConfig.PaddingLeft
@@ -108,7 +101,6 @@ func loadImages(bundlePath string) {
 				image:       imageFile,
 				name:        data.Name,
 				width:       width,
-				height:      height,
 				paddingLeft: paddingLeft,
 				paddingTop:  paddingTop,
 			}
