@@ -20,7 +20,7 @@ type Plugin struct {
 
 	// configuration is the active plugin configuration. Consult getConfiguration and
 	// setConfiguration for usage.
-	configuration *configuration
+	// configuration *configuration
 
 	router *mux.Router
 }
@@ -38,12 +38,11 @@ func serveImg(w http.ResponseWriter, r *http.Request) {
 
 // OnActivate activate plugin
 func (p *Plugin) OnActivate() error {
-	bundlePath, err := p.API.GetBundlePath()
-	if err != nil {
-		panic(err)
-	}
-
-	loadImages(bundlePath)
+	// bundlePath, err := p.API.GetBundlePath()
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// loadImages(bundlePath)
 
 	p.router = mux.NewRouter()
 	p.router.HandleFunc("/img/{name}.jpg", serveImg).Methods("GET")
@@ -77,7 +76,21 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*mo
 
 // MessageHasBeenPosted read channel messages
 func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
-	fmt.Printf("Post: %v\n", post)
+	fmt.Printf("---------------------------------------------")
+	fmt.Printf("Post: %v\n", post.Message)
+	fmt.Printf("Post FileIds: %v\n", post.FileIds)
+
+	if len(post.FileIds) > 0 {
+		fmt.Printf("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeee: \n")
+		link, err := p.API.GetFile(post.FileIds[0])
+		fmt.Printf("Liiiiiiiiiiiiiink: %v\n", post.FileIds[0])
+		fmt.Printf("Liiiiiiiiiiiiiink: %v\n", err)
+
+		if err == nil {
+			fmt.Printf("Post Link: %v\n", link)
+		}
+	}
+
 }
 
 // See https://developers.mattermost.com/extend/plugins/server/reference/
