@@ -20,7 +20,8 @@ func loadImage(filePath string) image.Image {
 	return img
 }
 
-type faceType struct {
+// FaceType loaded from config
+type FaceType struct {
 	image       string
 	name        string
 	width       int
@@ -44,7 +45,7 @@ type FaceSwapConfig struct {
 	PaddingTop  int `json:"paddingTop"`
 }
 
-var images = []faceType{}
+var images = []FaceType{}
 
 func isImage(file string) bool {
 	ext := strings.ToLower(filepath.Ext(file))
@@ -97,7 +98,7 @@ func loadImages(bundlePath string) {
 				paddingTop = faceSwapConfig.PaddingTop
 			}
 
-			newFace := faceType{
+			newFace := FaceType{
 				image:       imageFile,
 				name:        data.Name,
 				width:       width,
@@ -115,13 +116,13 @@ func loadImages(bundlePath string) {
 }
 
 // Faces get faces
-func Faces() []faceType {
+func Faces() []FaceType {
 	return images
 }
 
-func main() {
+/* func main() {
 	loadImages("../")
-}
+} */
 
 // func getImg() {
 // 	files, err := ioutil.ReadDir("./faces")

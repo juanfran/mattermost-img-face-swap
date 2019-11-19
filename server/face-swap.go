@@ -10,7 +10,7 @@ import (
 	"gocv.io/x/gocv"
 )
 
-func faceswap(memePath string, face faceType) {
+func faceswap(memePath string, face FaceType) {
 	bigImage := gocv.IMRead(memePath, gocv.IMReadColor)
 
 	image1, err := imaging.Open(memePath)

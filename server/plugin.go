@@ -75,4 +75,9 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*mo
 	}, nil
 }
 
+// MessageHasBeenPosted read channel messages
+func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
+	fmt.Printf("Post: %v\n", post)
+}
+
 // See https://developers.mattermost.com/extend/plugins/server/reference/
