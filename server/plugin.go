@@ -38,11 +38,11 @@ func serveImg(w http.ResponseWriter, r *http.Request) {
 
 // OnActivate activate plugin
 func (p *Plugin) OnActivate() error {
-	// bundlePath, err := p.API.GetBundlePath()
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// loadImages(bundlePath)
+	bundlePath, err := p.API.GetBundlePath()
+	if err != nil {
+		panic(err)
+	}
+	loadImages(bundlePath)
 
 	p.router = mux.NewRouter()
 	p.router.HandleFunc("/img/{name}.jpg", serveImg).Methods("GET")

@@ -111,8 +111,8 @@ func loadImages(bundlePath string) {
 	}
 
 	fmt.Println(images)
-	test := filepath.Join(bundlePath, "assets", "meme3.jpg")
-	faceswap(test, images[0])
+	// test := filepath.Join(bundlePath, "assets", "meme3.jpg")
+	// faceswap(test, images[0])
 }
 
 // Faces get faces
@@ -143,7 +143,7 @@ func Faces() []FaceType {
 
 // 		face := faceType{
 // 			name:  faceName,
-// 			image: [image],
+// 			image: image,
 // 		}
 
 // 		images = append(images, face)
