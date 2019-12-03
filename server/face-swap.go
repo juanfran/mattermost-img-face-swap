@@ -1,14 +1,79 @@
 package main
 
 import (
-	"fmt"
+	"image"
+	"image/color"
+	"log"
 
-	"gocv.io/x/gocv"
+	"io/ioutil"
+
+	"github.com/disintegration/imaging"
+	pigo "github.com/esimov/pigo/core"
 )
 
-func faceswap(memePath string, face FaceType) bool {
-	fmt.Printf("plof")
-	gocv.NewCascadeClassifier()
+func faceswap(memePath string, memeFace FaceType) bool {
+	image1, err := imaging.Open(memePath)
+	if err != nil {
+		log.Fatalf("failed to open image: %v", err)
+	}
+
+	image2, err := imaging.Open(memeFace.image)
+	if err != nil {
+		log.Fatalf("failed to open image: %v", err)
+	}
+
+	cascadeFile, err := ioutil.ReadFile("./facefinder")
+	if err != nil {
+		log.Fatalf("Error reading the cascade file: %v", err)
+	}
+
+	src, err := pigo.GetImage(memePath)
+	if err != nil {
+		log.Fatalf("Cannot open the image file: %v", err)
+	}
+
+	pixels := pigo.RgbToGrayscale(src)
+	cols, rows := src.Bounds().Max.X, src.Bounds().Max.Y
+
+	cParams := pigo.CascadeParams{
+		MinSize:     100,
+		MaxSize:     640,
+		ShiftFactor: 0.1,
+		ScaleFactor: 1.1,
+
+		ImageParams: pigo.ImageParams{
+			Pixels: pixels,
+			Rows:   rows,
+			Cols:   cols,
+			Dim:    cols,
+		},
+	}
+
+	pigo := pigo.NewPigo()
+	classifier, err := pigo.Unpack(cascadeFile)
+	if err != nil {
+		log.Fatalf("Error reading the cascade file: %s", err)
+	}
+
+	angle := 0.0
+	dets := classifier.RunCascade(cParams, angle)
+	dets = classifier.ClusterDetections(dets, 0.2)
+
+	for _, face := range dets {
+		x := float64(face.Col - face.Scale/2)
+		y := float64(face.Row - face.Scale/2)
+		width := face.Scale
+		resizedImage := imaging.Resize(image2, width, 0, imaging.Lanczos)
+
+		dst := imaging.New(image1.Bounds().Dx(), image1.Bounds().Dy(), color.NRGBA{0, 0, 0, 0})
+		dst = imaging.Paste(dst, image1, image.Pt(0, 0))
+		dst = imaging.Overlay(dst, resizedImage, image.Pt(int(x)+memeFace.paddingLeft, (int(y)*80/100)+memeFace.paddingTop), 1)
+
+		err = imaging.Save(dst, "result.jpg")
+		if err != nil {
+			log.Fatalf("failed to save image: %v", err)
+		}
+	}
 
 	return true
 }
