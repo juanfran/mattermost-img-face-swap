@@ -11,7 +11,7 @@ import (
 	pigo "github.com/esimov/pigo/core"
 )
 
-func faceswap(memePath string, memeFace FaceType) bool {
+func faceswap(memePath string, memeFace FaceType) (image.Image, error) {
 	image1, err := imaging.Open(memePath)
 	if err != nil {
 		log.Fatalf("failed to open image: %v", err)
@@ -58,6 +58,7 @@ func faceswap(memePath string, memeFace FaceType) bool {
 	angle := 0.0
 	dets := classifier.RunCascade(cParams, angle)
 	dets = classifier.ClusterDetections(dets, 0.2)
+	var final image.Image
 
 	for _, face := range dets {
 		x := float64(face.Col - face.Scale/2)
@@ -67,15 +68,14 @@ func faceswap(memePath string, memeFace FaceType) bool {
 
 		dst := imaging.New(image1.Bounds().Dx(), image1.Bounds().Dy(), color.NRGBA{0, 0, 0, 0})
 		dst = imaging.Paste(dst, image1, image.Pt(0, 0))
-		dst = imaging.Overlay(dst, resizedImage, image.Pt(int(x)+memeFace.paddingLeft, (int(y)*80/100)+memeFace.paddingTop), 1)
-
-		err = imaging.Save(dst, "result.jpg")
-		if err != nil {
-			log.Fatalf("failed to save image: %v", err)
-		}
+		final = imaging.Overlay(dst, resizedImage, image.Pt(int(x)+memeFace.paddingLeft, (int(y)*80/100)+memeFace.paddingTop), 1)
+		// err = imaging.Save(dst, "result.jpg")
+		// if err != nil {
+		// 	log.Fatalf("failed to save image: %v", err)
+		// }
 	}
 
-	return true
+	return final, nil
 }
 
 // image1, err := imaging.Open(memePath)

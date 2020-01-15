@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
+	"image"
 	"net/http"
 	"strings"
 	"sync"
+
+	_ "image/jpeg"
 
 	"github.com/gorilla/mux"
 	"github.com/mattermost/mattermost-server/model"
@@ -25,19 +28,47 @@ type Plugin struct {
 	router *mux.Router
 }
 
-// ServeHTTP demonstrates a plugin that handles HTTP requests by greeting the world.
+var currentImage image.Image = nil
+
 func (p *Plugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Hello, world!")
+	if r.Header.Get("Mattermost-User-Id") == "" {
+		http.Error(w, "please log in", http.StatusForbidden)
+		return
+	}
+
+	p.router.ServeHTTP(w, r)
 }
 
 // serve Img
 func serveImg(w http.ResponseWriter, r *http.Request) {
+	/* 	http.NotFound(w, r)
+	   	return */
+
+	w.Header().Set("Content-Type", "image/jpeg")
+	w.Header().Set("Cache-Control", "public, max-age=604800")
+
+	fmt.Printf("serveImg serveImg serveImg serveImg serveImg serveImg serveImg \n")
+
+	if currentImage != nil {
+		fmt.Printf("currentImage != nil")
+	} else {
+		fmt.Printf("currentImage == nil")
+	}
 	http.NotFound(w, r)
 	return
+
+	// if err := jpeg.Encode(w, currentImage, &jpeg.Options{
+	// 	Quality: 90,
+	// }); err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
 }
 
 // OnActivate activate plugin
 func (p *Plugin) OnActivate() error {
+	fmt.Printf("activate activate activate \n")
+
 	bundlePath, err := p.API.GetBundlePath()
 	if err != nil {
 		panic(err)
@@ -70,7 +101,7 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*mo
 
 	return &model.CommandResponse{
 		ResponseType: model.COMMAND_RESPONSE_TYPE_IN_CHANNEL,
-		Text:         "![Face swap](/plugins/face-swap/img/test.jpg)",
+		Text:         "![Face swap](/plugins/faceswap/img/test.jpg)",
 	}, nil
 }
 
@@ -82,15 +113,53 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 
 	if len(post.FileIds) > 0 {
 		fmt.Printf("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeee: \n")
-		link, err := p.API.GetFile(post.FileIds[0])
-		fmt.Printf("Liiiiiiiiiiiiiink: %v\n", post.FileIds[0])
-		fmt.Printf("Liiiiiiiiiiiiiink: %v\n", err)
+		/* 		link, err := p.API.GetFile(post.FileIds[0])
+		   		fmt.Printf("Liiiiiiiiiiiiiink: %v\n", post.FileIds[0])
+		   		fmt.Printf("Liiiiiiiiiiiiiink: %v\n", err) */
+
+		link, err := p.API.GetFileInfo(post.FileIds[0])
+
+		// if err == nil {
+		// 	fmt.Printf("Post Link: %v\n", link)
+		// 	fmt.Printf("Post Path: %v\n", link.Path)
+
+		// 	bytes, err2 := p.API.ReadFile(link.Path)
+
+		// 	if err2 == nil {
+		// 		fmt.Printf("bytes: %v\n", bytes)
+		// 	}
+		// }
 
 		if err == nil {
-			fmt.Printf("Post Link: %v\n", link)
+			fmt.Printf("Post Path: %v\n", link.Path)
+		}
+
+		// toodo instead of link.Path
+		// img, _, err := image.Decode(bytes.NewReader(MustAsset(assetName)))
+		resultImage, imgError := faceswap(link.Path, Faces()[0])
+
+		currentImage = resultImage
+
+		if imgError != nil {
+			fmt.Printf("Error faceswaping: %v\n", link.Path)
 		}
 	}
 
 }
+
+// import (
+// 	"bytes"
+// 	"image"
+// 	_ "image/jpeg"
+// 	_ "image/png"
+// )
+
+// func mustLoadImage(assetName string) image.Image {
+// 	img, _, err := image.Decode(bytes.NewReader(MustAsset(assetName)))
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	return img
+// }
 
 // See https://developers.mattermost.com/extend/plugins/server/reference/

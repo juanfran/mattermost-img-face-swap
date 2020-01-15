@@ -1,5 +1,5 @@
 {
-    "id": "com.juanfran.mattermost-img-face-swap",
+    "id": "faceswap",
     "name": "Change image faces",
     "description": "This plugin can change the faces of an image",
     "version": "0.1.0",

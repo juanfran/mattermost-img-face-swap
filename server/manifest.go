@@ -6,6 +6,6 @@ var manifest = struct {
 	ID      string
 	Version string
 }{
-	ID:      "com.juanfran.mattermost-img-face-swap",
+	ID:      "faceswap",
 	Version: "0.1.0",
 }
