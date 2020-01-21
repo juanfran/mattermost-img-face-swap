@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"image"
 	"net/http"
@@ -119,6 +120,25 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 
 		link, err := p.API.GetFileInfo(post.FileIds[0])
 
+		if err == nil {
+			fmt.Printf("ooooooooooooooooooooooooooooooooooooo")
+		}
+
+		link2, err2 := p.API.ReadFile(link.Path)
+
+		if err2 == nil {
+			fmt.Printf("ooooooooooooooooooooooooooooooooooooo")
+		}
+
+		img, _, err3 := image.Decode(bytes.NewReader(link2))
+
+		if err3 == nil {
+			fmt.Printf("ooooooooooooooooooooooooooooooooooooo")
+		}
+
+		//fmt.Println(Faces()[0].image)
+		// fmt.Println(img)
+
 		// if err == nil {
 		// 	fmt.Printf("Post Link: %v\n", link)
 		// 	fmt.Printf("Post Path: %v\n", link.Path)
@@ -135,8 +155,19 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 		}
 
 		// toodo instead of link.Path
-		// img, _, err := image.Decode(bytes.NewReader(MustAsset(assetName)))
-		resultImage, imgError := faceswap(link.Path, Faces()[0])
+		// img, _, err := image.Decode(bytes.NewReader(link.Path))
+
+		fmt.Println("lalalalalallal")
+		fmt.Println(Faces()[0].image)
+		fmt.Println("lelelelelele")
+
+		cascadeFile, err := p.API.ReadFile("./facefinder")
+		fmt.Printf("33333333")
+		if err != nil {
+			fmt.Printf("Error reading the cascade file: %v", err)
+		}
+
+		resultImage, imgError := faceswap(img, Faces()[0], cascadeFile)
 
 		currentImage = resultImage
 

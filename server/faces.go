@@ -84,6 +84,17 @@ func loadImages(bundlePath string) {
 
 		for _, image := range data.Images {
 			imageFile := filepath.Join(bundlePath, "assets", image.Path)
+
+			// src, err := pigo.GetImage(imageFile)
+			// fmt.Printf("444444444444444444444444444444444444444444444444444")
+			// if err != nil {
+			// 	fmt.Println("NOOOOOOOOOOOOO")
+			// } else {
+			// 	fmt.Println("SIIIIIIIIIIIIIII")
+			// 	fmt.Println(src)
+
+			// }
+
 			width := image.Width
 			paddingLeft := image.PaddingLeft
 			paddingTop := image.PaddingTop
@@ -111,6 +122,9 @@ func loadImages(bundlePath string) {
 	}
 
 	fmt.Println(images)
+	fmt.Printf("Len: %v", len(images))
+	fmt.Printf("Name: %v", images[0].name)
+
 	// test := filepath.Join(bundlePath, "assets", "meme3.jpg")
 	// faceswap(test, images[0])
 }

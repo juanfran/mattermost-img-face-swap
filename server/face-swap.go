@@ -1,40 +1,75 @@
 package main
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"log"
-
-	"io/ioutil"
 
 	"github.com/disintegration/imaging"
 	pigo "github.com/esimov/pigo/core"
 )
 
-func faceswap(memePath string, memeFace FaceType) (image.Image, error) {
-	image1, err := imaging.Open(memePath)
-	if err != nil {
-		log.Fatalf("failed to open image: %v", err)
-	}
+// RgbToGrayscale test
+func RgbToGrayscale(src image.Image) []uint8 {
+	cols, rows := src.Bounds().Dx(), src.Bounds().Dy()
+	gray := make([]uint8, rows*cols)
 
+	// todo debug outofrange
+	fmt.Printf("cols: %v\n", cols)
+	fmt.Printf("rows: %v\n", rows)
+
+	for y := 0; y < rows; y++ {
+		for x := 0; x < cols; x++ {
+			r, g, b, _ := src.At(x, y).RGBA()
+			gray[y*cols+x] = uint8(
+				(0.299*float64(r) +
+					0.587*float64(g) +
+					0.114*float64(b)) / 256,
+			)
+		}
+	}
+	return gray
+}
+
+func faceswap(image1 image.Image, memeFace FaceType, cascadeFile []byte) (image.Image, error) {
+	fmt.Printf("faceswapfaceswapfaceswapfaceswapfaceswapfaceswapfaceswapfaceswapfaceswapfaceswap: \n")
+
+	// image1, err := imaging.Open(memePath)
+	// if err != nil {
+	// 	log.Fatalf("failed to open image: %v", err)
+	// }
+
+	fmt.Printf("11111111111111111")
+	fmt.Printf("0000000000000000000000000")
 	image2, err := imaging.Open(memeFace.image)
+	fmt.Printf("22222222222222")
 	if err != nil {
 		log.Fatalf("failed to open image: %v", err)
 	}
 
-	cascadeFile, err := ioutil.ReadFile("./facefinder")
-	if err != nil {
-		log.Fatalf("Error reading the cascade file: %v", err)
-	}
+	// cascadeFile, err := ioutil.ReadFile("./facefinder")
+	// fmt.Printf("33333333")
+	// if err != nil {
+	// 	log.Fatalf("Error reading the cascade file: %v", err)
+	// }
 
-	src, err := pigo.GetImage(memePath)
-	if err != nil {
-		log.Fatalf("Cannot open the image file: %v", err)
-	}
-
-	pixels := pigo.RgbToGrayscale(src)
+	// src, err := pigo.GetImage(memePath)
+	// fmt.Printf("4444444")
+	// if err != nil {
+	// 	log.Fatalf("Cannot open the image file: %v", err)
+	// }
+	fmt.Printf("4444444")
+	src := pigo.ImgToNRGBA(image1)
+	fmt.Printf("555555")
 	cols, rows := src.Bounds().Max.X, src.Bounds().Max.Y
+	fmt.Printf("XXXXXXXXXXX: %v", cols)
+	fmt.Printf("YYYYYYYYYYY: %v", rows)
+	// pixels := pigo.RgbToGrayscale(src)
+	pixels := RgbToGrayscale(src)
 
+	fmt.Printf("666666")
+	fmt.Printf("7777")
 	cParams := pigo.CascadeParams{
 		MinSize:     100,
 		MaxSize:     640,
@@ -54,7 +89,7 @@ func faceswap(memePath string, memeFace FaceType) (image.Image, error) {
 	if err != nil {
 		log.Fatalf("Error reading the cascade file: %s", err)
 	}
-
+	fmt.Printf("666666666")
 	angle := 0.0
 	dets := classifier.RunCascade(cParams, angle)
 	dets = classifier.ClusterDetections(dets, 0.2)
