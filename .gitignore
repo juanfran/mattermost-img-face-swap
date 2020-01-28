@@ -1,3 +1,4 @@
 dist
 assets/*
 !assets/faces.example.json
+!assets/facefinder

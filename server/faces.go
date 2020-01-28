@@ -77,6 +77,7 @@ func loadImgConfigFile(filePath string) FaceSwapConfig {
 
 func loadImages(bundlePath string) {
 	filePath := filepath.Join(bundlePath, "assets", "faces.json")
+	fmt.Printf("filePath------>: %v \n", filePath)
 	var faceSwapConfig = loadImgConfigFile(filePath)
 
 	for _, data := range faceSwapConfig.Faces {

@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"io/ioutil"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"sync"
 
+	"image/jpeg"
 	_ "image/jpeg"
 
 	"github.com/gorilla/mux"
@@ -42,6 +45,7 @@ func (p *Plugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Req
 
 // serve Img
 func serveImg(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("SERVE IMG!! \n")
 	/* 	http.NotFound(w, r)
 	   	return */
 
@@ -55,15 +59,15 @@ func serveImg(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Printf("currentImage == nil")
 	}
-	http.NotFound(w, r)
-	return
+	// http.NotFound(w, r)
+	// return
 
-	// if err := jpeg.Encode(w, currentImage, &jpeg.Options{
-	// 	Quality: 90,
-	// }); err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
+	if err := jpeg.Encode(w, currentImage, &jpeg.Options{
+		Quality: 90,
+	}); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 // OnActivate activate plugin
@@ -112,6 +116,9 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 	fmt.Printf("Post: %v\n", post.Message)
 	fmt.Printf("Post FileIds: %v\n", post.FileIds)
 
+	// /mm/mattermost/plugins/faceswap/assets/faces.json
+	// /mm/mattermost-data/mm/mattermost/plugins/faceswap/assets/facefinder
+
 	if len(post.FileIds) > 0 {
 		fmt.Printf("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeee: \n")
 		/* 		link, err := p.API.GetFile(post.FileIds[0])
@@ -119,51 +126,37 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 		   		fmt.Printf("Liiiiiiiiiiiiiink: %v\n", err) */
 
 		link, err := p.API.GetFileInfo(post.FileIds[0])
-
 		if err == nil {
-			fmt.Printf("ooooooooooooooooooooooooooooooooooooo")
+			fmt.Printf("todo error 1")
 		}
 
 		link2, err2 := p.API.ReadFile(link.Path)
-
 		if err2 == nil {
-			fmt.Printf("ooooooooooooooooooooooooooooooooooooo")
+			fmt.Printf("todo error 2")
 		}
 
 		img, _, err3 := image.Decode(bytes.NewReader(link2))
-
 		if err3 == nil {
-			fmt.Printf("ooooooooooooooooooooooooooooooooooooo")
+			fmt.Printf("todo error 3")
 		}
-
-		//fmt.Println(Faces()[0].image)
-		// fmt.Println(img)
-
-		// if err == nil {
-		// 	fmt.Printf("Post Link: %v\n", link)
-		// 	fmt.Printf("Post Path: %v\n", link.Path)
-
-		// 	bytes, err2 := p.API.ReadFile(link.Path)
-
-		// 	if err2 == nil {
-		// 		fmt.Printf("bytes: %v\n", bytes)
-		// 	}
-		// }
 
 		if err == nil {
 			fmt.Printf("Post Path: %v\n", link.Path)
 		}
 
-		// toodo instead of link.Path
-		// img, _, err := image.Decode(bytes.NewReader(link.Path))
+		// fmt.Println(Faces()[0].image)
+		bundlePath, errBundlePath := p.API.GetBundlePath()
+		if errBundlePath != nil {
+			panic(err)
+		}
 
-		fmt.Println("lalalalalallal")
-		fmt.Println(Faces()[0].image)
-		fmt.Println("lelelelelele")
+		// cascadeFile, err := p.API.ReadFile(filepath.Join(bundlePath, "assets", "facefinder"))
 
-		cascadeFile, err := p.API.ReadFile("./facefinder")
-		fmt.Printf("33333333")
-		if err != nil {
+		cascadeFile, errCascadeFile := ioutil.ReadFile(filepath.Join(bundlePath, "assets", "facefinder"))
+
+		fmt.Printf("cascadeFile: %v\n", len(cascadeFile))
+
+		if errCascadeFile != nil {
 			fmt.Printf("Error reading the cascade file: %v", err)
 		}
 
