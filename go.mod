@@ -15,6 +15,7 @@ require (
 	github.com/mattermost/mattermost-server v5.12.0+incompatible
 	github.com/pelletier/go-toml v1.4.0 // indirect
 	github.com/pkg/errors v0.8.1
+	github.com/segmentio/ksuid v1.0.2
 	github.com/stretchr/testify v1.3.0
 )
 
