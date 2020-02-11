@@ -92,12 +92,17 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*mo
 	faces := Faces()
 	var memeFaces []FaceType
 
-	if input == "" {
+	if strings.Trim(input, "") == "" {
 		memeFaces = faces
 	} else {
+		selectedFaces := strings.Split(input, ",")
+
 		for index, f := range faces {
-			if f.name == input {
-				memeFaces = append(memeFaces, faces[index])
+			for _, sf := range selectedFaces {
+				fmt.Printf("Comparing: %v", sf)
+				if f.name == strings.Trim(sf, " ") {
+					memeFaces = append(memeFaces, faces[index])
+				}
 			}
 		}
 	}

@@ -81,7 +81,7 @@ func faceswap(image1 image.Image, memeFaces []FaceType, cascadeFile []byte) (ima
 			dst = imaging.Paste(dst, final, image.Pt(0, 0))
 			position := image.Pt(
 				int(x)+memeFace.paddingLeft,
-				(int(y)*80/100)+memeFace.paddingTop)
+				int(y)+memeFace.paddingTop)
 
 			final = imaging.Overlay(dst, resizedImage, position, 1)
 		}
