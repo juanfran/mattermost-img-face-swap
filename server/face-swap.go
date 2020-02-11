@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 	"log"
@@ -21,8 +20,6 @@ func faceswap(image1 image.Image, memeFace FaceType, cascadeFile []byte) (image.
 
 	pixels := pigo.RgbToGrayscale(src)
 
-	fmt.Printf("len: %v\n", len(pixels))
-
 	cParams := pigo.CascadeParams{
 		MinSize:     100,
 		MaxSize:     640,
@@ -36,9 +33,6 @@ func faceswap(image1 image.Image, memeFace FaceType, cascadeFile []byte) (image.
 			Dim:    cols,
 		},
 	}
-
-	fmt.Printf("cParams: %v\n", cParams.MinSize)
-	fmt.Printf("cascadeFile: %v\n", len(cascadeFile))
 
 	pigo := pigo.NewPigo()
 	classifier, err := pigo.Unpack(cascadeFile)
@@ -55,11 +49,8 @@ func faceswap(image1 image.Image, memeFace FaceType, cascadeFile []byte) (image.
 		x := float64(face.Col - face.Scale/2)
 		y := float64(face.Row - face.Scale/2)
 		width := face.Scale * (100 / memeFace.width)
-		fmt.Printf("width: %v\n", width)
-		resizedImage := imaging.Resize(image2, width, 0, imaging.Lanczos)
 
-		bounds := resizedImage.Bounds()
-		fmt.Println("Width Real:", bounds.Max.X, "Height:", bounds.Max.Y)
+		resizedImage := imaging.Resize(image2, width, 0, imaging.Lanczos)
 
 		dst := imaging.New(image1.Bounds().Dx(), image1.Bounds().Dy(), color.NRGBA{0, 0, 0, 0})
 		dst = imaging.Paste(dst, image1, image.Pt(0, 0))
