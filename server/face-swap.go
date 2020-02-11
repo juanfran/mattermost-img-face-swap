@@ -52,10 +52,6 @@ func faceswap(image1 image.Image, memeFaces []FaceType, cascadeFile []byte) (ima
 	dets = classifier.ClusterDetections(dets, 0.2)
 	var final image.Image
 
-	fmt.Println("--------------")
-	fmt.Println(len(memeFaces))
-	fmt.Println(len(dets))
-
 	final = image1
 
 	for index, face := range dets {
@@ -68,8 +64,6 @@ func faceswap(image1 image.Image, memeFaces []FaceType, cascadeFile []byte) (ima
 			if err != nil {
 				log.Fatalf("failed to open image: %v", err)
 			}
-
-			fmt.Println("Image loaded")
 
 			x := float64(face.Col - face.Scale/2)
 			y := float64(face.Row - face.Scale/2)

@@ -19,6 +19,9 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
+// MaxInMemoryMemes how many meme will stores in memory
+var MaxInMemoryMemes = 10
+
 // Plugin implements the interface expected by the Mattermost server to communicate between the server and plugin processes.
 type Plugin struct {
 	plugin.MattermostPlugin
@@ -35,6 +38,8 @@ type Plugin struct {
 
 // GeneratedMemes store images
 var GeneratedMemes map[string]image.Image = make(map[string]image.Image)
+
+var generatedMemesIds []string
 var currentImagePath string
 
 // generateID, generate random id with ksuid
@@ -99,7 +104,6 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*mo
 
 		for index, f := range faces {
 			for _, sf := range selectedFaces {
-				fmt.Printf("Comparing: %v", sf)
 				if f.name == strings.Trim(sf, " ") {
 					memeFaces = append(memeFaces, faces[index])
 				}
@@ -114,6 +118,13 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*mo
 
 		if err != nil {
 			fmt.Printf("todo error 2")
+		}
+
+		generatedMemesIds = append(generatedMemesIds, id)
+
+		if len(generatedMemesIds) > MaxInMemoryMemes {
+			delete(GeneratedMemes, generatedMemesIds[0])
+			generatedMemesIds = generatedMemesIds[1:]
 		}
 
 		GeneratedMemes[id] = img
