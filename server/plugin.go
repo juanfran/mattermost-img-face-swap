@@ -89,28 +89,45 @@ func (p *Plugin) OnActivate() error {
 func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	input := strings.TrimSpace(strings.TrimPrefix(args.Command, "/faceswap"))
 
-	names := []string{"person1", "person2"}
+	faces := Faces()
+	var memeFaces []FaceType
 
 	if input == "" {
+		memeFaces = faces
+	} else {
+		for index, f := range faces {
+			if f.name == input {
+				memeFaces = append(memeFaces, faces[index])
+			}
+		}
+	}
+
+	if len(memeFaces) > 0 {
+		id := generateID()
+
+		img, err := p.generateMeme(memeFaces)
+
+		if err != nil {
+			fmt.Printf("todo error 2")
+		}
+
+		GeneratedMemes[id] = img
+
 		return &model.CommandResponse{
-			ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL,
-			Text:         "Names:" + strings.Join(names, ", "),
+			ResponseType: model.COMMAND_RESPONSE_TYPE_IN_CHANNEL,
+			Text:         "![Face swap](/plugins/faceswap/img/" + id + ".jpg)",
 		}, nil
 	}
 
-	id := generateID()
+	var names []string
 
-	img, err := p.generateMeme()
-
-	if err != nil {
-		fmt.Printf("todo error 2")
+	for _, f := range faces {
+		names = append(names, f.name)
 	}
 
-	GeneratedMemes[id] = img
-
 	return &model.CommandResponse{
-		ResponseType: model.COMMAND_RESPONSE_TYPE_IN_CHANNEL,
-		Text:         "![Face swap](/plugins/faceswap/img/" + id + ".jpg)",
+		ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL,
+		Text:         "Valid names:" + strings.Join(names, ", "),
 	}, nil
 }
 
@@ -128,7 +145,7 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 }
 
 // GenerateMeme generate meme with the last image file
-func (p *Plugin) generateMeme() (image.Image, error) {
+func (p *Plugin) generateMeme(faces []FaceType) (image.Image, error) {
 	link2, err2 := p.API.ReadFile(currentImagePath)
 	if err2 != nil {
 		fmt.Printf("todo error 2")
@@ -150,7 +167,7 @@ func (p *Plugin) generateMeme() (image.Image, error) {
 		fmt.Printf("Error reading the cascade file: %v", errCascadeFile)
 	}
 
-	return faceswap(img, Faces()[0], cascadeFile)
+	return faceswap(img, faces, cascadeFile)
 }
 
 // See https://developers.mattermost.com/extend/plugins/server/reference/
