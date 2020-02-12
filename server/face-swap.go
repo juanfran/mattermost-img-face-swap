@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 	"log"
+	"math"
 	"math/rand"
 	"time"
 
@@ -65,17 +66,29 @@ func faceswap(image1 image.Image, memeFaces []FaceType, cascadeFile []byte) (ima
 				log.Fatalf("failed to open image: %v", err)
 			}
 
-			x := float64(face.Col - face.Scale/2)
-			y := float64(face.Row - face.Scale/2)
-			width := face.Scale * (100 / memeFace.width)
+			col := float64(face.Col)
+			row := float64(face.Row)
+			scale := float64(face.Scale)
+
+			x := int(col - scale/2)
+			y := int(row - scale/2)
+
+			width := int(math.Round(scale * (float64(memeFace.width) / 100.00)))
+
+			fmt.Println("width width width width width")
+			fmt.Println(scale)
+			fmt.Println(memeFace.width)
+			fmt.Println(width)
 
 			resizedImage := imaging.Resize(image2, width, 0, imaging.Lanczos)
+			resizedImageBounds := resizedImage.Bounds()
 
 			dst := imaging.New(final.Bounds().Dx(), final.Bounds().Dy(), color.NRGBA{0, 0, 0, 0})
 			dst = imaging.Paste(dst, final, image.Pt(0, 0))
 			position := image.Pt(
-				int(x)+memeFace.paddingLeft,
-				int(y)+memeFace.paddingTop)
+				x+int(float64(resizedImageBounds.Size().X)*float64(memeFace.paddingLeft)/100.00),
+				y+int(float64(resizedImageBounds.Size().Y)*float64(memeFace.paddingTop)/100.00),
+			)
 
 			final = imaging.Overlay(dst, resizedImage, position, 1)
 		}
