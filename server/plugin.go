@@ -153,9 +153,9 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 		link, err := p.API.GetFileInfo(post.FileIds[0])
 		if err != nil {
 			fmt.Printf("todo error 1")
+		} else if isImage(link.Path) {
+			currentImagePath = link.Path
 		}
-
-		currentImagePath = link.Path
 	}
 
 }

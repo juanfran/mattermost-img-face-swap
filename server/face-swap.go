@@ -29,9 +29,9 @@ func faceswap(image1 image.Image, memeFaces []FaceType, cascadeFile []byte) (ima
 	pixels := pigo.RgbToGrayscale(src)
 
 	cParams := pigo.CascadeParams{
-		MinSize:     100,
+		MinSize:     50,
 		MaxSize:     640,
-		ShiftFactor: 0.1,
+		ShiftFactor: 0.2,
 		ScaleFactor: 1.1,
 
 		ImageParams: pigo.ImageParams{
