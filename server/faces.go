@@ -135,32 +135,23 @@ func Faces() []FaceType {
 	return images
 }
 
-/* func main() {
-	loadImages("../")
-} */
+// AppendIfMissing append if is not in the array
+func AppendIfMissing(slice []string, i string) []string {
+	for _, ele := range slice {
+		if ele == i {
+			return slice
+		}
+	}
+	return append(slice, i)
+}
 
-// func getImg() {
-// 	files, err := ioutil.ReadDir("./faces")
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
+// FacesNames return all face names
+func FacesNames() []string {
+	var names []string
 
-// 	for _, file := range files {
-// 		fileName := file.Name()
+	for _, f := range Faces() {
+		names = AppendIfMissing(names, f.name)
+	}
 
-// 		if !isImage(fileName) {
-// 			// yalm?
-// 			continue
-// 		}
-
-// 		faceName := strings.TrimSuffix(fileName, filepath.Ext(fileName))
-// 		image := loadImage(filepath.Join("faces", fileName))
-
-// 		face := faceType{
-// 			name:  faceName,
-// 			image: image,
-// 		}
-
-// 		images = append(images, face)
-// 	}
-// }
+	return names
+}

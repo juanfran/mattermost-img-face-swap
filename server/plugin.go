@@ -83,10 +83,12 @@ func (p *Plugin) OnActivate() error {
 	p.router = mux.NewRouter()
 	p.router.HandleFunc("/img/{name}.jpg", serveImg).Methods("GET")
 
+	var names = FacesNames()
+
 	return p.API.RegisterCommand(&model.Command{
 		Trigger:          "faceswap",
 		AutoComplete:     true,
-		AutoCompleteDesc: "todo2.",
+		AutoCompleteDesc: strings.Join(names, ", "),
 	})
 }
 
@@ -135,11 +137,7 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*mo
 		}, nil
 	}
 
-	var names []string
-
-	for _, f := range faces {
-		names = append(names, f.name)
-	}
+	var names = FacesNames()
 
 	return &model.CommandResponse{
 		ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL,
@@ -186,4 +184,4 @@ func (p *Plugin) generateMeme(faces []FaceType) (image.Image, error) {
 	return faceswap(img, faces, cascadeFile)
 }
 
-// See https://developers.mattermost.com/extend/plugins/server/reference/
+// https://developers.mattermost.com/extend/plugins/server/reference/
