@@ -3,7 +3,6 @@ package swap
 import (
 	"image"
 	"image/color"
-	"log"
 	"math"
 	"math/rand"
 	"time"
@@ -21,13 +20,17 @@ func shuffleFaces(a []*facesLib.FaceType) {
 
 // ImgFaceSwap swap image faces by newFaces
 func ImgFaceSwap(sourceImg image.Image, newFaces []*facesLib.FaceType, cascadeFile []byte) (image.Image, error) {
-	src := pigo.ImgToNRGBA(sourceImg)
+	if sourceImg.Bounds().Max.X > 1920 {
+		sourceImg = imaging.Resize(sourceImg, 1920, 0, imaging.Lanczos)
+	}
+
+	sourceNRGBA := pigo.ImgToNRGBA(sourceImg)
 
 	shuffleFaces(newFaces)
 
-	cols, rows := src.Bounds().Max.X, src.Bounds().Max.Y
+	cols, rows := sourceNRGBA.Bounds().Max.X, sourceNRGBA.Bounds().Max.Y
 
-	pixels := pigo.RgbToGrayscale(src)
+	pixels := pigo.RgbToGrayscale(sourceNRGBA)
 
 	cParams := pigo.CascadeParams{
 		MinSize:     50,
@@ -46,7 +49,7 @@ func ImgFaceSwap(sourceImg image.Image, newFaces []*facesLib.FaceType, cascadeFi
 	pigo := pigo.NewPigo()
 	classifier, err := pigo.Unpack(cascadeFile)
 	if err != nil {
-		log.Fatalf("Error reading the cascade file: %s", err)
+		return nil, err
 	}
 
 	angle := 0.0
@@ -61,7 +64,7 @@ func ImgFaceSwap(sourceImg image.Image, newFaces []*facesLib.FaceType, cascadeFi
 			newFaceImage, err := imaging.Open(newFace.Image)
 
 			if err != nil {
-				log.Fatalf("failed to open image: %v", err)
+				return nil, err
 			}
 
 			col := float64(face.Col)

@@ -36,13 +36,13 @@ type FaceSwapConfig struct {
 
 var images = []*FaceType{}
 
-func loadImgConfigFile(filePath string) FaceSwapConfig {
+func loadImgConfigFile(filePath string) (*FaceSwapConfig, error) {
 	var faceSwapConfig FaceSwapConfig
 
 	jsonFile, err := os.Open(filePath)
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	byteValue, _ := ioutil.ReadAll(jsonFile)
@@ -50,13 +50,17 @@ func loadImgConfigFile(filePath string) FaceSwapConfig {
 
 	defer jsonFile.Close()
 
-	return faceSwapConfig
+	return &faceSwapConfig, nil
 }
 
 // LoadFacesConfig load faces config
-func LoadFacesConfig(bundlePath string) {
+func LoadFacesConfig(bundlePath string) error {
 	filePath := filepath.Join(bundlePath, "assets", "faces.json")
-	var faceSwapConfig = loadImgConfigFile(filePath)
+	faceSwapConfig, err := loadImgConfigFile(filePath)
+
+	if err != nil {
+		return err
+	}
 
 	for _, data := range faceSwapConfig.Faces {
 		for _, image := range data.Images {
@@ -87,6 +91,8 @@ func LoadFacesConfig(bundlePath string) {
 			images = append(images, newFace)
 		}
 	}
+
+	return nil
 }
 
 // Faces get faces

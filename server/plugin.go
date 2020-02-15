@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"image"
 	"io/ioutil"
@@ -56,25 +57,24 @@ func serveImg(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *Plugin) generateMeme(faces []*facesLib.FaceType) (image.Image, error) {
-	link2, err2 := p.API.ReadFile(currentImagePath)
-	if err2 != nil {
-		fmt.Printf("todo error 2")
+	link2, errReadFile := p.API.ReadFile(currentImagePath)
+	if errReadFile != nil {
+		return nil, errors.New(errReadFile.Error())
 	}
 
-	img, _, err3 := image.Decode(bytes.NewReader(link2))
-	if err3 != nil {
-		fmt.Printf("todo error 3")
+	img, _, errDecodeImage := image.Decode(bytes.NewReader(link2))
+	if errDecodeImage != nil {
+		return nil, errDecodeImage
 	}
 
-	bundlePath, errBundlePath := p.API.GetBundlePath()
-	if errBundlePath != nil {
-		fmt.Printf("todo error 4")
+	bundlePath, errGetBundlePath := p.API.GetBundlePath()
+	if errGetBundlePath != nil {
+		return nil, errGetBundlePath
 	}
 
-	cascadeFile, errCascadeFile := ioutil.ReadFile(filepath.Join(bundlePath, "assets", "facefinder"))
-
-	if errCascadeFile != nil {
-		fmt.Printf("Error reading the cascade file: %v", errCascadeFile)
+	cascadeFile, errReadCascade := ioutil.ReadFile(filepath.Join(bundlePath, "assets", "facefinder"))
+	if errReadCascade != nil {
+		return nil, errReadCascade
 	}
 
 	return swap.ImgFaceSwap(img, faces, cascadeFile)
@@ -93,10 +93,14 @@ func (p *Plugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Req
 func (p *Plugin) OnActivate() error {
 	bundlePath, err := p.API.GetBundlePath()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	facesLib.LoadFacesConfig(bundlePath)
+	err = facesLib.LoadFacesConfig(bundlePath)
+
+	if err != nil {
+		return err
+	}
 
 	p.router = mux.NewRouter()
 	p.router.HandleFunc("/img/{name}.jpg", serveImg).Methods("GET")
@@ -131,13 +135,20 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*mo
 		}
 	}
 
+	if len(currentImagePath) == 0 {
+		return &model.CommandResponse{
+			ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL,
+			Text:         "Before you have to upload an image",
+		}, nil
+	}
+
 	if len(memeFaces) > 0 {
 		id := generateID()
 
 		img, err := p.generateMeme(memeFaces)
 
 		if err != nil {
-			fmt.Printf("todo error 2")
+			return nil, model.NewAppError("ExecuteCommand", "error faceswap", nil, err.Error(), http.StatusInternalServerError)
 		}
 
 		generatedMemesIds = append(generatedMemesIds, id)
@@ -167,7 +178,7 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 		link, err := p.API.GetFileInfo(post.FileIds[0])
 
 		if err != nil {
-			fmt.Printf("todo error 1")
+			fmt.Println(err.Error())
 		} else if utils.IsImage(link.Path) {
 			currentImagePath = link.Path
 		}
