@@ -1,4 +1,4 @@
-module github.com/mattermost/mattermost-plugin-starter-template
+module github.com/juanfran/mattermost-img-face-swap
 
 go 1.12
 

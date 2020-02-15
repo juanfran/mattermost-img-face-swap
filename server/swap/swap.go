@@ -1,7 +1,6 @@
-package main
+package swap
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 	"log"
@@ -9,20 +8,22 @@ import (
 	"math/rand"
 	"time"
 
+	facesLib "github.com/juanfran/mattermost-img-face-swap/server/faces"
+
 	"github.com/disintegration/imaging"
 	pigo "github.com/esimov/pigo/core"
 )
 
-// Shuffle face type
-func Shuffle(a []FaceType) {
+func shuffleFaces(a []*facesLib.FaceType) {
 	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(a), func(i, j int) { a[i], a[j] = a[j], a[i] })
 }
 
-func faceswap(image1 image.Image, memeFaces []FaceType, cascadeFile []byte) (image.Image, error) {
-	src := pigo.ImgToNRGBA(image1)
+// ImgFaceSwap swap image faces by newFaces
+func ImgFaceSwap(sourceImg image.Image, newFaces []*facesLib.FaceType, cascadeFile []byte) (image.Image, error) {
+	src := pigo.ImgToNRGBA(sourceImg)
 
-	Shuffle(memeFaces)
+	shuffleFaces(newFaces)
 
 	cols, rows := src.Bounds().Max.X, src.Bounds().Max.Y
 
@@ -51,16 +52,13 @@ func faceswap(image1 image.Image, memeFaces []FaceType, cascadeFile []byte) (ima
 	angle := 0.0
 	dets := classifier.RunCascade(cParams, angle)
 	dets = classifier.ClusterDetections(dets, 0.2)
-	var final image.Image
-
-	final = image1
+	final := sourceImg
 
 	for index, face := range dets {
-		if index < len(memeFaces) {
-			memeFace := memeFaces[index]
-			fmt.Println(memeFace.name)
+		if index < len(newFaces) {
+			newFace := newFaces[index]
 
-			image2, err := imaging.Open(memeFace.image)
+			newFaceImage, err := imaging.Open(newFace.Image)
 
 			if err != nil {
 				log.Fatalf("failed to open image: %v", err)
@@ -73,21 +71,17 @@ func faceswap(image1 image.Image, memeFaces []FaceType, cascadeFile []byte) (ima
 			x := int(col - scale/2)
 			y := int(row - scale/2)
 
-			width := int(math.Round(scale * (float64(memeFace.width) / 100.00)))
+			width := int(math.Round(scale * (float64(newFace.Width) / 100.00)))
 
-			fmt.Println("width width width width width")
-			fmt.Println(scale)
-			fmt.Println(memeFace.width)
-			fmt.Println(width)
-
-			resizedImage := imaging.Resize(image2, width, 0, imaging.Lanczos)
+			resizedImage := imaging.Resize(newFaceImage, width, 0, imaging.Lanczos)
 			resizedImageBounds := resizedImage.Bounds()
 
 			dst := imaging.New(final.Bounds().Dx(), final.Bounds().Dy(), color.NRGBA{0, 0, 0, 0})
 			dst = imaging.Paste(dst, final, image.Pt(0, 0))
+
 			position := image.Pt(
-				x+int(float64(resizedImageBounds.Size().X)*float64(memeFace.paddingLeft)/100.00),
-				y+int(float64(resizedImageBounds.Size().Y)*float64(memeFace.paddingTop)/100.00),
+				x+int(float64(resizedImageBounds.Size().X)*float64(newFace.PaddingLeft)/100.00),
+				y+int(float64(resizedImageBounds.Size().Y)*float64(newFace.PaddingTop)/100.00),
 			)
 
 			final = imaging.Overlay(dst, resizedImage, position, 1)
