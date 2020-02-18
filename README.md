@@ -1,76 +1,71 @@
-# Plugin Starter Template [![CircleCI branch](https://img.shields.io/circleci/project/github/mattermost/mattermost-plugin-starter-template/master.svg)](https://circleci.com/gh/mattermost/mattermost-plugin-starter-template)
+# Mattermost FaceSwap Plugin
 
-This plugin serves as a starting point for writing a Mattermost plugin. Feel free to base your own plugin off this repository.
+Change the faces of an image for the ones you want.
 
-To learn more about plugins, see [our plugin documentation](https://developers.mattermost.com/extend/plugins/).
+## Configuration
 
-## Getting Started
-Use GitHub's template feature to make a copy of this repository by clicking the "Use this template" button then clone outside of `$GOPATH`.
+Clone the repository.
 
-Alternatively shallow clone the repository to a directory outside of `$GOPATH` matching your plugin name:
 ```
-git clone --depth 1 https://github.com/mattermost/mattermost-plugin-starter-template com.example.my-plugin
+git clone git@github.com:juanfran/mattermost-img-face-swap.git
 ```
 
-Note that this project uses [Go modules](https://github.com/golang/go/wiki/Modules). Be sure to locate the project outside of `$GOPATH`, or allow the use of Go modules within your `$GOPATH` with an `export GO111MODULE=on`.
+Create your configuration file. In this file you will configure each face that will be available to put over another one.
 
-Edit `plugin.json` with your `id`, `name`, and `description`:
 ```
+cd mattermost-img-face-swap
+cp assets/faces.example.json assets/faces.json 
+```
+
+Open the configuration file `assets/faces.json` 
+
+```json
 {
-    "id": "com.example.my-plugin",
-    "name": "My Plugin",
-    "description": "A plugin to enhance Mattermost."
+    "faces": [
+        {
+            "name": "name",
+            "images": [
+                {
+                    "path": "faces/face1.png",
+                    "width": 80,
+                    "paddingLeft": 30,
+                    "paddingTop": 0
+                }
+            ]
+        },
+                {
+            "name": "name2",
+            "images": [
+                {
+                    "path": "faces/face2.png",
+                },
+                {
+                    "path": "faces/face2.png",
+                    "paddingLeft": 5
+                }
+            ]
+        }
+    ],
+    "width": 80,
+    "paddingLeft": 0,
+    "paddingTop": 0
 }
 ```
 
-Build your plugin:
+`width`, `paddingLeft`, `paddingTop` are parameters that you can configure globally or on each face that need a custom position or size. This modifiers are relative to the face width.
+
+To add new face you have to add it to the `faces` array with a name that will be used later. In the `images` param you can add multiples images for each face and each one with their custom position and width if neccesary. The faces should be cropped and have a transparent background.
+
+## Installation
+
+Just run `make` in the project folder.
+
 ```
 make
 ```
 
-This will produce a single plugin file (with support for multiple architectures) for upload to your Mattermost server:
+When the build is complete a file will be generated in the `dist` folder. You can upload this file in the Mattermost system console to install the plugin.
 
-```
-dist/com.example.my-plugin.tar.gz
-```
+## Usage
 
-There is a build target to automate deploying and enabling the plugin to your server, but it requires configuration and [http](https://httpie.org/) to be installed:
-```
-export MM_SERVICESETTINGS_SITEURL=http://localhost:8065
-export MM_ADMIN_USERNAME=admin
-export MM_ADMIN_PASSWORD=password
-make deploy
-```
-
-Alternatively, if you are running your `mattermost-server` out of a sibling directory by the same name, use the `deploy` target alone to  unpack the files into the right directory. You will need to restart your server and manually enable your plugin.
-
-In production, deploy and upload your plugin via the [System Console](https://about.mattermost.com/default-plugin-uploads).
-
-## Q&A
-
-### How do I make a server-only or web app-only plugin?
-
-Simply delete the `server` or `webapp` folders and remove the corresponding sections from `plugin.json`. The build scripts will skip the missing portions automatically.
-
-### How do I include assets in the plugin bundle?
-
-Place them into the `assets` directory. To use an asset at runtime, build the path to your asset and open as a regular file:
-
-```go
-bundlePath, err := p.API.GetBundlePath()
-if err != nil {
-    return errors.Wrap(err, "failed to get bundle path")
-}
-
-profileImage, err := ioutil.ReadFile(filepath.Join(bundlePath, "assets", "profile_image.png"))
-if err != nil {
-    return errors.Wrap(err, "failed to read profile image")
-}
-
-if appErr := p.API.SetProfileImage(userID, profileImage); appErr != nil {
-    return errors.Wrap(err, "failed to set profile image")
-}
-```
-
-### How do I build the plugin with unminified JavaScript?
-Use `make debug-dist` and `make debug-deploy` in place of `make dist` and `make deploy` to configure webpack to generate unminified Javascript.
+Upload an image to a channel, then run the command `/faceswap` and a bot will answer with the image with the faces randomly replaces with the faces in your `assets/faces.json` file. If you want to choose which faces to use just run `/faceswap name1,name2`
