@@ -33,12 +33,12 @@ func generateID() string {
 }
 
 func (p *Plugin) generateMeme(currentImagePath string, faces []*facesLib.FaceType) (image.Image, error) {
-	link2, errReadFile := p.API.ReadFile(currentImagePath)
+	link, errReadFile := p.API.ReadFile(currentImagePath)
 	if errReadFile != nil {
 		return nil, errors.New(errReadFile.Error())
 	}
 
-	img, _, errDecodeImage := image.Decode(bytes.NewReader(link2))
+	img, _, errDecodeImage := image.Decode(bytes.NewReader(link))
 	if errDecodeImage != nil {
 		return nil, errDecodeImage
 	}
